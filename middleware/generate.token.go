@@ -34,7 +34,7 @@ jwtSecret := os.Getenv("JWT_SECRET")
 	claims := jwt.MapClaims{
 		"user": user,
 		"iat":      time.Now().Unix(),
-		"ExpiresAt":    expiredTime,
+		"ExpiredAt":    expiredTime,
 	}
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
