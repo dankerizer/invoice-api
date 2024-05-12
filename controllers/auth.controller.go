@@ -2,19 +2,13 @@ package controllers
 
 import (
 	"invoiceApi/database"
+	"invoiceApi/helper"
+	"invoiceApi/middleware"
 	"invoiceApi/models"
-	"strconv"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
-
-//	type AuthHandler struct {
-//		service auth.InterfaceAuth
-//	}
-const SecretKey = "secret"
 
 func Auth(c *fiber.Ctx) error {
 	return c.SendString("Hello Hadie ini adalah router auth!!")
@@ -24,7 +18,9 @@ func Login(c *fiber.Ctx) error {
 	var data map[string]string
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		c.Status(fiber.StatusBadRequest)
+		return helper.SendErrorResponse(c, fiber.StatusBadRequest, err)
+
 	}
 
 	var user models.User
@@ -39,18 +35,13 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(data["password"])); err != nil {
-		c.Status(fiber.StatusBadRequest)
+		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
 			"message": "incorrect password",
 		})
 	} // If the email is present in the DB then compare the Passwords and if incorrect password then return error.
 
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Issuer:    strconv.Itoa(int(user.ID)),
-		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), //1 day
-	})
-
-	token, err := claims.SignedString([]byte(SecretKey))
+	token, err := middleware.GenerateJWTToken(&user)
 
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
@@ -59,21 +50,26 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
-	cookie := fiber.Cookie{
-		Name:     "jwt",
-		Value:    token,
-		Expires:  time.Now().Add(time.Hour * 24),
-		HTTPOnly: true,
-	}
+	// cookie := fiber.Cookie{
+	// 	Name:     "jwt",
+	// 	Value:    token.Token,
+	// 	Expires:  time.Now().Add(time.Hour * 24),
+	// 	HTTPOnly: true,
+	// }
 
-	c.Cookie(&cookie)
+	return c.Status(fiber.StatusOK).JSON(token)
 
-	return c.JSON(fiber.Map{
-		"message": "success",
-	})
+	// c.Cookie(&cookie)
+
+	// return c.JSON(fiber.Map{
+	// 	"message": "success",
+	// 	"token":   token.Token,
+	// 	"expired": token.Expired,
+	// })
 }
 func Logout(c *fiber.Ctx) error {
 	return c.SendString("Hello Hadie ini adalah router logout!!")
+
 }
 func Register(c *fiber.Ctx) error {
 	var data map[string]string
@@ -94,8 +90,8 @@ func Register(c *fiber.Ctx) error {
 func Profile(c *fiber.Ctx) error {
 	// cookie := c.Cookies("jwt")
 
-	// token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-	// 	return []byte(SecretKey), nil
-	// })
-	return c.SendString("Hello Hadie ini adalah router logout!!")
+	token := c.Locals("user");
+			// claims := token.Claims
+
+	return c.Status(fiber.StatusOK).JSON(token)
 }
