@@ -7,14 +7,15 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// type AuthHandler struct {
-// 	service auth.InterfaceAuth
-// }
+//	type AuthHandler struct {
+//		service auth.InterfaceAuth
+//	}
 const SecretKey = "secret"
+
 func Auth(c *fiber.Ctx) error {
 	return c.SendString("Hello Hadie ini adalah router auth!!")
 }
@@ -75,10 +76,10 @@ func Logout(c *fiber.Ctx) error {
 	return c.SendString("Hello Hadie ini adalah router logout!!")
 }
 func Register(c *fiber.Ctx) error {
-	    var data map[string]string
-	 if err := c.BodyParser(&data); err != nil {
-        return err
-    }
+	var data map[string]string
+	if err := c.BodyParser(&data); err != nil {
+		return err
+	}
 	password, _ := bcrypt.GenerateFromPassword([]byte(data["password"]), 14) //GenerateFromPassword returns the bcrypt hash of the password at the given cost i.e. (14 in our case).
 
 	user := models.User{
@@ -86,13 +87,12 @@ func Register(c *fiber.Ctx) error {
 		Email:    data["email"],
 		Password: password,
 	}
-		database.DB.Create(&user) //Adds the data to the DB
-    return c.JSON(data)
+	database.DB.Create(&user) //Adds the data to the DB
+	return c.JSON(data)
 }
 
-
 func Profile(c *fiber.Ctx) error {
-// cookie := c.Cookies("jwt")
+	// cookie := c.Cookies("jwt")
 
 	// token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 	// 	return []byte(SecretKey), nil

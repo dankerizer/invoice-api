@@ -12,8 +12,13 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/joho/godotenv"
 )
-
+func init() {
+    if err := godotenv.Load(); err != nil {
+        log.Panic("No .env file found")
+    }
+}
 func main() {
 	go func() {
 		err := http.ListenAndServe("localhost:6060", nil)
