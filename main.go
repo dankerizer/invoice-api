@@ -22,7 +22,7 @@ func main() {
 		}
 	}()
 
-	database.DBconn()
+	database.ConnectDb()
 	app := fiber.New(fiber.Config{
 		EnablePrintRoutes: true,
 		Immutable:         true,

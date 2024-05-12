@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 func init() {
-	database.DBconn()
+	database.ConnectDb()
 
 	log.SetFormatter(&log.TextFormatter{
 		ForceColors:      true,
